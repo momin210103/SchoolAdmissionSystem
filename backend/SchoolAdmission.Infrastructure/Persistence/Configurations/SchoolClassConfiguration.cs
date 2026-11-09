@@ -16,7 +16,8 @@ namespace SchoolAdmission.Infrastructure.Persistence.Configurations
                 t.HasCheckConstraint("ck_classes_total_seats", "total_seats > 0"));
 
             builder.HasKey(c => c.Id);
-            builder.Property(c => c.Id).UseIdentityByDefaultColumn();
+            builder.Property(c => c.Id)
+       .HasDefaultValueSql("gen_random_uuid()");
 
             builder.Property(c => c.Name).HasColumnName("name").HasMaxLength(200).IsRequired();
             builder.Property(c => c.TotalSeats).HasColumnName("total_seats").IsRequired();

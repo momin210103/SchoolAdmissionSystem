@@ -24,7 +24,8 @@ namespace SchoolAdmission.Infrastructure.Persistence.Configurations
             });
 
             builder.HasKey(h => h.Id);
-            builder.Property(h => h.Id).UseIdentityByDefaultColumn();
+            builder.Property(h => h.Id)
+       .HasDefaultValueSql("gen_random_uuid()");
 
             builder.Property(h => h.ClassId).HasColumnName("class_id").IsRequired();
             builder.Property(h => h.StudentId).HasColumnName("student_id").HasMaxLength(17).IsFixedLength().IsRequired();
