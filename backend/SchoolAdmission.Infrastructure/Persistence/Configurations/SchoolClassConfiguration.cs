@@ -22,6 +22,9 @@ namespace SchoolAdmission.Infrastructure.Persistence.Configurations
             builder.Property(c => c.Name).HasColumnName("name").HasMaxLength(200).IsRequired();
             builder.Property(c => c.TotalSeats).HasColumnName("total_seats").IsRequired();
             builder.Property(c => c.CreatedAt).HasColumnName("created_at").IsRequired();
+            builder.HasIndex(c => c.Name)
+                    .IsUnique()
+                    .HasDatabaseName("ux_classes_name");
 
             // Navigation: one class has many holds.
             builder.HasMany(c => c.Holds)

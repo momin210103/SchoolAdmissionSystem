@@ -15,15 +15,29 @@ public sealed class ClassService : IClassService
     {
         _context = context;
     }
-
     public async Task<ClassResponse> CreateAsync(
         CreateClassRequest request,
         CancellationToken cancellationToken = default)
     {
+        var normalizedName = request.Name.Trim();
+
+        // Check duplicate class name
+        var exists = await _context.Classes
+            .AnyAsync(
+                c => c.Name == normalizedName,
+                cancellationToken
+            );
+
+        if (exists)
+        {
+            throw new InvalidOperationException(
+       "A class with this name already exists.");
+        }
+
         var schoolClass = new SchoolClass
         {
             Id = Guid.NewGuid(),
-            Name = request.Name.Trim(),
+            Name = normalizedName,
             TotalSeats = request.TotalSeats
         };
 
