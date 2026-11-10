@@ -5,7 +5,7 @@ using SchoolAdmission.Application.Interfaces.Services;
 namespace SchoolAdmission.API.Controllers;
 
 [ApiController]
-[Route("api/classes")]
+[Route("classes")]
 public sealed class ClassesController : ControllerBase
 {
     private readonly IClassService _classService;

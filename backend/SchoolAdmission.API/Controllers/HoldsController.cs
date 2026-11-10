@@ -1,12 +1,14 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
+using SchoolAdmission.Application.DTOs.Holds;
 using SchoolAdmission.Application.Interfaces.Services;
 
 namespace SchoolAdmission.API.Controllers;
 
 [ApiController]
-[Route("classes/{classId:guid}/holds")]
+// [Route("classes/{classId:guid}/holds")]
 public sealed class HoldsController : ControllerBase
+
 {
     private readonly IHoldService _holdService;
 
@@ -15,7 +17,7 @@ public sealed class HoldsController : ControllerBase
         _holdService = holdService;
     }
 
-    [HttpPost]
+    [HttpPost("classes/{classId:guid}/holds")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -61,4 +63,32 @@ public sealed class HoldsController : ControllerBase
             return Conflict(new { message = ex.Message });
         }
     }
+
+    [HttpGet("holds/{holdId:guid}")]
+    [ProducesResponseType(
+           typeof(HoldResponse),
+           StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(
+           Guid holdId,
+           CancellationToken cancellationToken)
+    {
+        var result = await _holdService.GetByIdAsync(
+            holdId,
+            cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound(new
+            {
+                message = "Hold not found."
+            });
+        }
+
+        return Ok(result);
+    }
 }
+
+
+
+

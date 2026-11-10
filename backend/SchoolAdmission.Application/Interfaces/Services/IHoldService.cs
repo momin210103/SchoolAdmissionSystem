@@ -8,4 +8,5 @@ public interface IHoldService
         Guid classId,
         string studentId,
         CancellationToken cancellationToken = default);
+    Task<HoldResponse> GetByIdAsync(Guid holdId,CancellationToken cancellationToken = default);
 }

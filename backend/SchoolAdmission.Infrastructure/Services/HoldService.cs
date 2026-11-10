@@ -110,4 +110,35 @@ public sealed class HoldService : IHoldService
             hold.ExpiresAt.UtcDateTime
         );
     }
+
+    public async Task<HoldResponse?> GetByIdAsync(
+    Guid holdId,
+    CancellationToken cancellationToken = default)
+    {
+        var hold = await _context.Holds
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                h => h.Id == holdId,
+                cancellationToken);
+
+        if (hold is null)
+        {
+            return null;
+        }
+
+        // Calculate effective status.
+        var status = hold.Status.ToString().ToUpperInvariant();
+
+        if (status == "HELD" && hold.ExpiresAt <= DateTime.UtcNow)
+        {
+            status = "EXPIRED";
+        }
+
+        return new HoldResponse(
+            hold.Id,
+            hold.ClassId,
+            status,
+            hold.ExpiresAt.UtcDateTime
+        );
+    }
 }
