@@ -1,25 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { GraduationCap, Menu, X, IdCard } from "lucide-react";
+import { useStudentId } from "../../hooks/useStudentId";
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [studentId, setStudentId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const checkStudentId = () => {
-      try {
-        const id = localStorage.getItem("studentId");
-        setStudentId(id);
-      } catch {
-        setStudentId(null);
-      }
-    };
-
-    checkStudentId();
-    window.addEventListener("storage", checkStudentId);
-    return () => window.removeEventListener("storage", checkStudentId);
-  }, []);
+  const { studentId } = useStudentId();
 
   const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
     `inline-flex items-center px-3.5 py-2 text-sm font-medium rounded-lg transition-colors focus-ring ${
