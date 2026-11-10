@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SchoolAdmission.Application.DTOs.Holds;
 using SchoolAdmission.Application.Interfaces.Services;
 using SchoolAdmission.Domain;
@@ -14,6 +15,100 @@ public sealed class HoldService : IHoldService
     public HoldService(ApplicationDbContext context)
     {
         _context = context;
+    }
+
+    public async Task<HoldConfirmResponse> ConfirmAsync(Guid holdId, string studentId, CancellationToken cancellationToken)
+    {
+        await using var transaction =
+        await _context.Database.BeginTransactionAsync(cancellationToken);
+
+        // Lock the hold row to prevent concurrent confirmation/cancellation.
+        var connection = _context.Database.GetDbConnection();
+
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction.GetDbTransaction();
+
+        command.CommandText = """
+        SELECT "Id"
+        FROM holds
+        WHERE "Id" = @holdId
+        FOR UPDATE
+        """;
+
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "holdId";
+        parameter.Value = holdId;
+        command.Parameters.Add(parameter);
+
+        var lockedHoldId = await command.ExecuteScalarAsync(cancellationToken);
+
+        if (lockedHoldId is null)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw new KeyNotFoundException("Admission hold not found.");
+        }
+
+        // Load the hold as a tracked entity because it may be updated.
+        var hold = await _context.Holds
+            .FirstAsync(h => h.Id == holdId, cancellationToken);
+
+        // Verify ownership before exposing or changing the hold.
+        if (hold.StudentId != studentId)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw new UnauthorizedAccessException(
+                "You are not authorized to confirm this admission hold.");
+        }
+
+        // Idempotency: repeated confirmation must not change the result.
+        if (hold.Status == HoldStatus.CONFIRMED)
+        {
+            await transaction.CommitAsync(cancellationToken);
+
+            return new HoldConfirmResponse(
+                hold.Id,
+                "CONFIRMED");
+        }
+
+        if (hold.Status == HoldStatus.CANCELLED)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw new InvalidOperationException(
+                "This admission hold has been cancelled.");
+        }
+
+        if (hold.Status == HoldStatus.EXPIRED)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw new InvalidOperationException(
+                "This admission hold has expired.");
+        }
+
+        var now = DateTime.UtcNow;
+
+        // An expired hold cannot be confirmed.
+        if (hold.ExpiresAt <= now)
+        {
+            hold.Status = HoldStatus.EXPIRED;
+
+            await _context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            throw new InvalidOperationException(
+                "This admission hold has expired.");
+        }
+
+        hold.Status = HoldStatus.CONFIRMED;
+        hold.ConfirmedAt = now;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return new HoldConfirmResponse(
+            hold.Id,
+            "CONFIRMED");
     }
 
     public async Task<CreateHoldResponse> CreateAsync(

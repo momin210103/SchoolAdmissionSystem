@@ -87,6 +87,57 @@ public sealed class HoldsController : ControllerBase
 
         return Ok(result);
     }
+
+    
+    
+    
+    [HttpPost("/holds/{holdId:guid}/confirm")]
+    [ProducesResponseType(
+        typeof(HoldConfirmResponse),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Confirm(
+        Guid holdId,
+        [FromHeader(Name = "X-Student-Id")] string? studentId,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(studentId) ||
+            !System.Text.RegularExpressions.Regex.IsMatch(
+                studentId, @"^[0-9]{17}$"))
+        {
+            return BadRequest(new
+            {
+                message = "X-Student-Id must contain exactly 17 digits."
+            });
+        }
+
+        try
+        {
+            var result = await _holdService.ConfirmAsync(
+                holdId,
+                studentId,
+                cancellationToken);
+
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(
+                StatusCodes.Status403Forbidden,
+                new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
 }
 
 
