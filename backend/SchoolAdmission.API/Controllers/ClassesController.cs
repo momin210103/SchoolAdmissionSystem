@@ -26,7 +26,7 @@ public sealed class ClassesController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetById),
-            new { id = result.Id },
+            new { classId = result.Id },
             result);
     }
 
