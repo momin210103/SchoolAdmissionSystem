@@ -40,15 +40,15 @@ public sealed class ClassesController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{classId:guid}")]
     [ProducesResponseType(typeof(ClassResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(
-        Guid id,
+        Guid classId,
         CancellationToken cancellationToken)
     {
         var result = await _classService.GetByIdAsync(
-            id, cancellationToken);
+            classId, cancellationToken);
 
         if (result is null)
         {
