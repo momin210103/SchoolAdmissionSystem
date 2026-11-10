@@ -51,7 +51,7 @@ public sealed class HoldService : IHoldService
 
         // Load the hold as a tracked entity because it may be updated.
         var hold = await _context.Holds
-            .FirstAsync(h => h.Id == holdId, cancellationToken);
+            .SingleAsync(h => h.Id == holdId, cancellationToken);
 
         // Verify ownership before exposing or changing the hold.
         if (hold.StudentId != studentId)
@@ -126,14 +126,37 @@ public sealed class HoldService : IHoldService
             await _context.Database.BeginTransactionAsync(cancellationToken);
 
         // Lock the class row to prevent concurrent seat allocation.
-        var locked = await _context.Database.ExecuteSqlInterpolatedAsync(
-            $"""SELECT "Id" FROM classes WHERE "Id" = {classId} FOR UPDATE""",
+        var connection = _context.Database.GetDbConnection();
+
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction.GetDbTransaction();
+
+        command.CommandText = """
+    SELECT "Id"
+    FROM classes
+    WHERE "Id" = @classId
+    FOR UPDATE
+    """;
+
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "classId";
+        parameter.Value = classId;
+
+        command.Parameters.Add(parameter);
+
+        var lockedClassId = await command.ExecuteScalarAsync(
             cancellationToken);
+
+        if (lockedClassId is null)
+        {
+            throw new KeyNotFoundException("Class not found.");
+        }
 
         // ExecuteSqlInterpolatedAsync does not return SELECT rows.
         // Check existence using EF after acquiring the row lock.
         var schoolClass = await _context.Classes
-            .FirstOrDefaultAsync(c => c.Id == classId, cancellationToken);
+            .FirstAsync(c => c.Id == classId, cancellationToken);
 
         if (schoolClass is null)
         {
