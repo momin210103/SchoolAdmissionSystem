@@ -8,10 +8,19 @@ public interface IHoldService
         Guid classId,
         string studentId,
         CancellationToken cancellationToken = default);
-    Task<HoldResponse> GetByIdAsync(Guid holdId,CancellationToken cancellationToken = default);
+    Task<HoldResponse> GetByIdAsync(Guid holdId, CancellationToken cancellationToken = default);
     Task<HoldConfirmResponse> ConfirmAsync(
         Guid holdId,
         string studentId,
         CancellationToken cancellationToken
     );
+
+    Task CancelAsync(
+    Guid holdId,
+    string studentId,
+    CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<MyHoldResponse>> GetMyHoldsAsync(
+        string studentId,
+        CancellationToken cancellationToken = default);
 }

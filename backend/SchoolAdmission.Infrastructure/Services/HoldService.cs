@@ -236,4 +236,125 @@ public sealed class HoldService : IHoldService
             hold.ExpiresAt.UtcDateTime
         );
     }
+
+
+    public async Task CancelAsync(
+    Guid holdId,
+    string studentId,
+    CancellationToken cancellationToken = default)
+    {
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync(cancellationToken);
+
+        // Lock the hold row to prevent concurrent confirm/cancel operations.
+        var connection = _context.Database.GetDbConnection();
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction.GetDbTransaction();
+
+        command.CommandText = """
+        SELECT "Id"
+        FROM holds
+        WHERE "Id" = @holdId
+        FOR UPDATE
+        """;
+
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "holdId";
+        parameter.Value = holdId;
+        command.Parameters.Add(parameter);
+
+        var lockedId = await command.ExecuteScalarAsync(cancellationToken);
+
+        if (lockedId is null)
+        {
+            throw new KeyNotFoundException("Admission hold not found.");
+        }
+
+        var hold = await _context.Holds
+            .FirstAsync(h => h.Id == holdId, cancellationToken);
+
+        if (hold.StudentId != studentId)
+        {
+            throw new UnauthorizedAccessException(
+                "You are not authorized to cancel this admission hold.");
+        }
+
+        // Repeated cancellation is safe.
+        if (hold.Status == HoldStatus.CANCELLED)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            return;
+        }
+
+        if (hold.Status == HoldStatus.CONFIRMED)
+        {
+            throw new InvalidOperationException(
+                "A confirmed admission cannot be cancelled through this endpoint.");
+        }
+
+        if (hold.Status == HoldStatus.EXPIRED ||
+            hold.ExpiresAt <= DateTime.UtcNow)
+        {
+            if (hold.Status == HoldStatus.HELD)
+            {
+                hold.Status = HoldStatus.EXPIRED;
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+
+            throw new InvalidOperationException(
+                "An expired admission hold cannot be cancelled.");
+        }
+
+        hold.Status = HoldStatus.CANCELLED;
+        hold.CancelledAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<MyHoldResponse>> GetMyHoldsAsync(
+    string studentId,
+    CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+
+        var holds = await (
+            from hold in _context.Holds.AsNoTracking()
+            join schoolClass in _context.Classes.AsNoTracking()
+                on hold.ClassId equals schoolClass.Id
+            where hold.StudentId == studentId
+            orderby hold.CreatedAt descending
+            select new
+            {
+                hold.Id,
+                hold.ClassId,
+                ClassName = schoolClass.Name,
+                hold.Status,
+                hold.ExpiresAt
+            })
+            .ToListAsync(cancellationToken);
+
+        return holds
+            .Select(hold =>
+            {
+                var status = hold.Status.ToString().ToUpperInvariant();
+
+                if (status == "HELD" && hold.ExpiresAt <= now)
+                {
+                    status = "EXPIRED";
+                }
+
+                return new MyHoldResponse(
+                    hold.Id,
+                    hold.ClassId,
+                    hold.ClassName,
+                    status,
+                    hold.ExpiresAt.UtcDateTime
+                );
+            })
+            .ToList();
+    }
 }
