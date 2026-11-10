@@ -7,4 +7,14 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const studentId = localStorage.getItem("studentId");
+
+  if (studentId) {
+    config.headers["X-Student-Id"] = studentId;
+  }
+
+  return config;
+});
+
 export default api;
