@@ -11,7 +11,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-app)] text-[var(--text-body)]">
       <Navbar />
-      <main className="flex-1 portal-container section-spacing" id="main-content">
+      <main className="flex-1" id="main-content">
         {children ?? <Outlet />}
       </main>
       <Footer />

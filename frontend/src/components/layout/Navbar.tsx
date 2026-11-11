@@ -1,11 +1,31 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { GraduationCap, Menu, X, IdCard } from "lucide-react";
 import { useStudentId } from "../../hooks/useStudentId";
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { studentId } = useStudentId();
+  const location = useLocation();
+
+  // Close mobile menu on route change
+  const [prevPathname, setPrevPathname] = useState(location.pathname);
+  if (prevPathname !== location.pathname) {
+    setPrevPathname(location.pathname);
+    setIsMobileMenuOpen(false);
+  }
+
+  // Close mobile menu on Escape key press
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isMobileMenuOpen]);
 
   const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
     `inline-flex items-center px-3.5 py-2 text-sm font-medium rounded-lg transition-colors focus-ring ${

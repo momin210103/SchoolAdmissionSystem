@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { holdService } from "../services/holdService";
 import { useStudentId } from "../hooks/useStudentId";
+import { useToast } from "../hooks/useToast";
 import { StudentIdForm } from "../components/applications";
 import type { MyHoldResponse } from "../types/hold";
 
@@ -24,6 +25,7 @@ type ApplicationFilter = "all" | "active" | "completed";
 
 export const MyApplicationsPage = () => {
   const { studentId, clearStudentId } = useStudentId();
+  const toast = useToast();
 
   const [holds, setHolds] = useState<MyHoldResponse[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(Boolean(studentId));
@@ -33,7 +35,7 @@ export const MyApplicationsPage = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Manual refresh handler
-  const handleRefresh = () => {
+  const handleRefresh = (showSuccessToast = true) => {
     if (!studentId) return;
 
     setIsLoading(true);
@@ -43,6 +45,9 @@ export const MyApplicationsPage = () => {
       .getMyHolds(studentId)
       .then((data) => {
         setHolds(data);
+        if (showSuccessToast) {
+          toast.info("Applications list refreshed.");
+        }
       })
       .catch((err: unknown) => {
         const message =
@@ -50,6 +55,7 @@ export const MyApplicationsPage = () => {
             ? err.message
             : "Failed to retrieve your admission holds.";
         setError(message);
+        toast.error(message);
       })
       .finally(() => {
         setIsLoading(false);
@@ -89,6 +95,7 @@ export const MyApplicationsPage = () => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(text);
+    toast.success("Application Reference ID copied to clipboard.");
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -219,7 +226,7 @@ export const MyApplicationsPage = () => {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={handleRefresh}
+            onClick={() => handleRefresh(true)}
             className="btn btn-outline btn-sm inline-flex items-center gap-1.5 bg-white shadow-xs"
             disabled={isLoading}
             title="Refresh applications list"
@@ -341,7 +348,7 @@ export const MyApplicationsPage = () => {
           <p className="body-small text-red-700 mb-5 leading-relaxed">{error}</p>
           <button
             type="button"
-            onClick={handleRefresh}
+            onClick={() => handleRefresh(true)}
             className="btn btn-outline btn-sm bg-white border-red-300 text-red-800 hover:bg-red-50"
           >
             Try Again

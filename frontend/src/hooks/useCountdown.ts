@@ -20,7 +20,15 @@ export const useCountdown = ({
   onExpire,
   enabled = true,
 }: UseCountdownOptions): UseCountdownResult => {
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(() => {
+    if (!expiresAt || enabled === false) return 0;
+    try {
+      const target = new Date(expiresAt).getTime();
+      return Math.max(0, Math.floor((target - Date.now()) / 1000));
+    } catch {
+      return 0;
+    }
+  });
   const onExpireRef = useRef(onExpire);
 
   useEffect(() => {

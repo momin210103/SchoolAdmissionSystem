@@ -1,6 +1,6 @@
 import type { AvailableClassesSectionProps } from "../../types/admission";
 import { ClassList } from "./ClassList";
-import { AlertCircle, X } from "lucide-react";
+import { AlertCircle, X, RotateCw } from "lucide-react";
 
 export const AvailableClassesSection = ({
   classes,
@@ -34,6 +34,19 @@ export const AvailableClassesSection = ({
           <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
             <span>Seat availability refreshed in real time</span>
+            {onRefresh && (
+              <button
+                type="button"
+                onClick={onRefresh}
+                className="ml-1 p-1 text-slate-400 hover:text-primary-900 rounded transition-colors focus-ring"
+                title="Refresh class seat counts"
+                aria-label="Refresh class seat counts"
+              >
+                <RotateCw
+                  className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`}
+                />
+              </button>
+            )}
           </div>
         </div>
 

@@ -117,6 +117,12 @@ body {
   min-height: 100vh;
   background-color: var(--bg-app);
   color: var(--text-body);
+  overflow-x: hidden;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-secondary-600);
+  outline-offset: 2px;
 }
 
 button,

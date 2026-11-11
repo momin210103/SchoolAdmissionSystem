@@ -9,6 +9,7 @@ import {
 } from "../components/admission";
 import { StudentIdForm } from "../components/applications";
 import { useStudentId } from "../hooks/useStudentId";
+import { useToast } from "../hooks/useToast";
 import { classService } from "../services/classService";
 import { holdService } from "../services/holdService";
 import { ApiError } from "../services/api";
@@ -18,6 +19,7 @@ import type { SubmissionErrorDetail } from "../types/admission";
 export const AdmissionLandingPage = () => {
   const navigate = useNavigate();
   const { studentId } = useStudentId();
+  const toast = useToast();
 
   const [classes, setClasses] = useState<ClassResponse[]>([]);
   const [isLoadingClasses, setIsLoadingClasses] = useState<boolean>(true);
@@ -78,6 +80,8 @@ export const AdmissionLandingPage = () => {
 
   // Core hold submission workflow communicating directly with the backend
   const executeHoldSubmission = async (targetClassId: string, targetStudentId: string) => {
+    if (submittingClassId) return;
+
     setSubmittingClassId(targetClassId);
     setSubmissionError(null);
 
@@ -85,12 +89,34 @@ export const AdmissionLandingPage = () => {
       // Backend is the source of truth - POST /classes/{classId}/holds
       const holdResult = await holdService.createHold(targetClassId, targetStudentId);
 
+      // Automatically refresh the corresponding class data and update heldSeats/availableSeats immediately
+      try {
+        const updatedClass = await classService.getClassById(targetClassId);
+        setClasses((prev) =>
+          prev.map((c) => (c.id === targetClassId ? updatedClass : c))
+        );
+      } catch {
+        // Fallback update in state if getClassById encountered network hiccup
+        setClasses((prev) =>
+          prev.map((c) =>
+            c.id === targetClassId
+              ? {
+                  ...c,
+                  heldSeats: c.heldSeats + 1,
+                  availableSeats: Math.max(0, c.availableSeats - 1),
+                }
+              : c
+          )
+        );
+      }
+
       // On successful hold creation: navigate to application details page
       navigate(`/applications/${holdResult.holdId}`, {
         state: { hold: holdResult },
       });
     } catch (err: unknown) {
       if (err instanceof ApiError) {
+        toast.error(err.message || "Failed to create admission hold.");
         const status = err.status;
         const msg = (err.message || "").toLowerCase();
 
@@ -147,12 +173,14 @@ export const AdmissionLandingPage = () => {
           });
         }
       } else {
+        const errorMsg =
+          err instanceof Error
+            ? err.message
+            : "Unable to connect to the admission server. Please check your internet connection.";
+        toast.error(errorMsg);
         setSubmissionError({
           title: "Network / Connection Error",
-          message:
-            err instanceof Error
-              ? err.message
-              : "Unable to connect to the admission server. Please check your internet connection.",
+          message: errorMsg,
         });
       }
     } finally {
@@ -189,6 +217,19 @@ export const AdmissionLandingPage = () => {
     }
   };
 
+  // Close identification modal on Escape key press
+  useEffect(() => {
+    if (!isIdModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsIdModalOpen(false);
+        setPendingClassId(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isIdModalOpen]);
+
   const handleApplyHeroClick = () => {
     const element = document.getElementById("available-classes");
     if (element) {
@@ -197,7 +238,7 @@ export const AdmissionLandingPage = () => {
   };
 
   return (
-    <div className="flex flex-col -mx-4 sm:-mx-6 lg:-mx-8 -my-8 sm:-my-12">
+    <div className="flex flex-col">
       <HeroSection onApplyClick={handleApplyHeroClick} />
       <AdmissionInfoSection />
       <AdmissionStepsSection />
@@ -220,6 +261,12 @@ export const AdmissionLandingPage = () => {
           role="dialog"
           aria-modal="true"
           aria-label="Student Identification"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsIdModalOpen(false);
+              setPendingClassId(null);
+            }
+          }}
         >
           <div className="w-full max-w-xl relative">
             <StudentIdForm

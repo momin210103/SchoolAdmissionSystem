@@ -52,7 +52,10 @@ export function handleAxiosError(
 
     let message = data?.message || data?.title;
 
-    if (!message) {
+    if (!status || axiosError.code === "ERR_NETWORK") {
+      message =
+        "Network Error: Unable to reach the admission server. Please check your internet connection or ensure the service is running.";
+    } else if (!message) {
       switch (status) {
         case 400:
           message =
@@ -68,6 +71,10 @@ export function handleAxiosError(
         case 409:
           message =
             "Conflict: No seats available, hold has expired, or an active hold already exists.";
+          break;
+        case 500:
+          message =
+            "Server Error: The admissions server encountered an error. Please try again shortly.";
           break;
         default:
           message = axiosError.message || defaultMessage;

@@ -79,10 +79,10 @@ export const SeatAvailability = ({
       </div>
 
       {/* Breakdown Grid: Total, Held, Confirmed, Available */}
-      <div className="grid grid-cols-4 gap-2 text-center pt-1">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-center pt-1">
         {/* Total Seats */}
-        <div className="flex flex-col p-2 rounded-lg bg-slate-50 border border-slate-100">
-          <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+        <div className="flex flex-col p-1.5 sm:p-2 rounded-lg bg-slate-50 border border-slate-100">
+          <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 uppercase tracking-wider truncate">
             Total
           </span>
           <span className="text-sm font-bold text-primary-900 mt-0.5">
@@ -91,8 +91,8 @@ export const SeatAvailability = ({
         </div>
 
         {/* Confirmed Seats */}
-        <div className="flex flex-col p-2 rounded-lg bg-secondary-50/60 border border-secondary-100/70">
-          <span className="text-[11px] font-medium text-secondary-700 uppercase tracking-wider">
+        <div className="flex flex-col p-1.5 sm:p-2 rounded-lg bg-secondary-50/60 border border-secondary-100/70">
+          <span className="text-[10px] sm:text-[11px] font-medium text-secondary-700 uppercase tracking-wider truncate">
             Confirmed
           </span>
           <span className="text-sm font-bold text-secondary-700 mt-0.5">
@@ -101,8 +101,8 @@ export const SeatAvailability = ({
         </div>
 
         {/* Held Seats */}
-        <div className="flex flex-col p-2 rounded-lg bg-amber-50/60 border border-amber-100/70">
-          <span className="text-[11px] font-medium text-amber-700 uppercase tracking-wider">
+        <div className="flex flex-col p-1.5 sm:p-2 rounded-lg bg-amber-50/60 border border-amber-100/70">
+          <span className="text-[10px] sm:text-[11px] font-medium text-amber-700 uppercase tracking-wider truncate">
             Held
           </span>
           <span className="text-sm font-bold text-amber-700 mt-0.5">
@@ -112,7 +112,7 @@ export const SeatAvailability = ({
 
         {/* Available Seats */}
         <div
-          className={`flex flex-col p-2 rounded-lg border ${
+          className={`flex flex-col p-1.5 sm:p-2 rounded-lg border ${
             isFull
               ? "bg-red-50/70 border-red-200/80 text-red-700"
               : isLowAvailability
@@ -120,7 +120,7 @@ export const SeatAvailability = ({
                 : "bg-emerald-50/70 border-emerald-200/80 text-emerald-800"
           }`}
         >
-          <span className="text-[11px] font-medium uppercase tracking-wider">
+          <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-wider truncate">
             Available
           </span>
           <span className="text-sm font-bold mt-0.5">{safeAvailable}</span>
