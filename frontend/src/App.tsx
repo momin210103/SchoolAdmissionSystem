@@ -5,6 +5,7 @@ import {
   AdmissionLandingPage,
   ApplicationDetailsPage,
   MyApplicationsPage,
+  CreateClassPage,
 } from "./pages";
 
 export function App() {
@@ -20,6 +21,7 @@ export function App() {
               path="applications/:holdId"
               element={<ApplicationDetailsPage />}
             />
+            <Route path="classes/create" element={<CreateClassPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { GraduationCap, Menu, X, IdCard } from "lucide-react";
+import { GraduationCap, Menu, X, IdCard, PlusCircle } from "lucide-react";
 import { useStudentId } from "../../hooks/useStudentId";
 
 export const Navbar = () => {
@@ -77,6 +77,10 @@ export const Navbar = () => {
             </NavLink>
             <NavLink to="/applications" className={navLinkClasses}>
               My Applications
+            </NavLink>
+            <NavLink to="/classes/create" className={navLinkClasses}>
+              <PlusCircle className="w-4 h-4 mr-1.5 shrink-0" />
+              <span>Create Class</span>
             </NavLink>
           </nav>
 
@@ -161,6 +165,14 @@ export const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               My Applications
+            </NavLink>
+            <NavLink
+              to="/classes/create"
+              className={mobileNavLinkClasses}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <PlusCircle className="w-4 h-4 mr-2 text-secondary-600 shrink-0" />
+              <span>Create Class</span>
             </NavLink>
 
             <div className="pt-3 mt-1 border-t border-slate-100 flex flex-col gap-2">

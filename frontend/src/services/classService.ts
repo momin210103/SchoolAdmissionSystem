@@ -1,7 +1,23 @@
 import api, { handleAxiosError } from "./api";
-import type { ClassResponse } from "../types/class";
+import type { ClassResponse, CreateClassRequest } from "../types/class";
 
 export const classService = {
+  /**
+   * Creates a new admission class with the specified seat capacity.
+   * POST /classes
+   */
+  async createClass(request: CreateClassRequest): Promise<ClassResponse> {
+    try {
+      const response = await api.post<ClassResponse>("/classes", {
+        name: request.name.trim(),
+        totalSeats: request.totalSeats,
+      });
+      return response.data;
+    } catch (error) {
+      return handleAxiosError(error, "Failed to create class.");
+    }
+  },
+
   /**
    * Fetches all available admission classes and seat quotas.
    * GET /classes
