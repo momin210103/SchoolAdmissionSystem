@@ -58,7 +58,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/", () => "Welcome to the Onnorokom Academy Admission System!");
 
 app.Run();
 public partial class Program;
