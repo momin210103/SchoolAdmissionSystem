@@ -16,7 +16,7 @@ export const Footer = () => {
               </div>
               <div className="flex flex-col">
                 <span className="text-base font-bold text-white tracking-tight leading-tight">
-                  Apex Academy
+                  Onnorokom Academy
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
                   School Admission Portal

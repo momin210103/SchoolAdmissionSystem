@@ -15,8 +15,16 @@ export const ClassCard = ({
   isApplying = false,
   isDisabled = false,
 }: ClassCardProps) => {
-  const { id, name, shift, totalSeats, heldSeats, confirmedSeats, availableSeats, isActive } =
-    admissionClass;
+  const {
+    id,
+    name,
+    shift,
+    totalSeats,
+    heldSeats,
+    confirmedSeats,
+    availableSeats,
+    isActive,
+  } = admissionClass;
 
   const isFull = availableSeats <= 0;
   const isClassActive = isActive ?? true;
@@ -25,7 +33,8 @@ export const ClassCard = ({
   const getShiftIcon = (shiftName?: string) => {
     if (!shiftName) return null;
     const lower = shiftName.toLowerCase();
-    if (lower.includes("morning")) return <Sun className="w-3.5 h-3.5 text-amber-500" />;
+    if (lower.includes("morning"))
+      return <Sun className="w-3.5 h-3.5 text-amber-500" />;
     if (lower.includes("evening") || lower.includes("night"))
       return <Moon className="w-3.5 h-3.5 text-indigo-500" />;
     return <Clock className="w-3.5 h-3.5 text-slate-500" />;
@@ -34,7 +43,9 @@ export const ClassCard = ({
   return (
     <div
       className={`card flex flex-col justify-between p-6 transition-all duration-200 ${
-        isAvailable ? "card-interactive hover:border-secondary-300" : "opacity-95"
+        isAvailable
+          ? "card-interactive hover:border-secondary-300"
+          : "opacity-95"
       }`}
     >
       <div>
@@ -100,7 +111,7 @@ export const ClassCard = ({
             </span>
           ) : (
             <span className="flex items-center gap-1.5">
-              <span>Apply for Admission</span>
+              <span>আবেদন করুন</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </span>
           )}

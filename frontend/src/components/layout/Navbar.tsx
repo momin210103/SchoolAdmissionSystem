@@ -56,7 +56,7 @@ export const Navbar = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-base font-bold tracking-tight text-primary-900 group-hover:text-secondary-600 transition-colors leading-tight">
-                Apex Academy
+                Onnorokom Academy
               </span>
               <span className="text-xs text-slate-500 font-medium leading-none">
                 Admission Portal
@@ -72,9 +72,9 @@ export const Navbar = () => {
             <NavLink to="/" className={navLinkClasses} end>
               Home
             </NavLink>
-            <NavLink to="/admission" className={navLinkClasses}>
+            {/* <NavLink to="/admission" className={navLinkClasses}>
               Admission
-            </NavLink>
+            </NavLink> */}
             <NavLink to="/applications" className={navLinkClasses}>
               My Applications
             </NavLink>
@@ -95,16 +95,18 @@ export const Navbar = () => {
                 <IdCard className="w-3.5 h-3.5 text-secondary-600 shrink-0" />
                 <span className="text-slate-500">ID:</span>
                 <span className="font-mono font-semibold text-primary-900">
-                  {studentId.length > 12 ? `${studentId.slice(0, 10)}…` : studentId}
+                  {studentId.length > 12
+                    ? `${studentId.slice(0, 10)}…`
+                    : studentId}
                 </span>
               </div>
             )}
-            <Link
+            {/* <Link
               to="/admission"
               className="btn btn-secondary btn-sm shadow-xs"
             >
               Apply Now
-            </Link>
+            </Link> */}
           </div>
 
           {/* Mobile Menu Button */}
@@ -116,7 +118,9 @@ export const Navbar = () => {
               >
                 <IdCard className="w-3.5 h-3.5 text-secondary-600" />
                 <span className="font-mono text-xs">
-                  {studentId.length > 8 ? `${studentId.slice(0, 6)}…` : studentId}
+                  {studentId.length > 8
+                    ? `${studentId.slice(0, 6)}…`
+                    : studentId}
                 </span>
               </div>
             )}
@@ -152,13 +156,13 @@ export const Navbar = () => {
             >
               Home
             </NavLink>
-            <NavLink
+            {/* <NavLink
               to="/admission"
               className={mobileNavLinkClasses}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Admission
-            </NavLink>
+            </NavLink> */}
             <NavLink
               to="/applications"
               className={mobileNavLinkClasses}

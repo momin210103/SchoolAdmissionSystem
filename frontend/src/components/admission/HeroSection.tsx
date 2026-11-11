@@ -59,17 +59,17 @@ export const HeroSection = ({
                 onClick={handleApplyClick}
                 className="btn btn-secondary btn-lg shadow-sm group"
               >
-                <span>Apply Now</span>
+                <span>Class এর তালিকা</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </button>
 
-              <button
+              {/* <button
                 type="button"
                 onClick={handleScrollToClasses}
                 className="btn btn-outline btn-lg"
               >
                 <span>View Available Classes</span>
-              </button>
+              </button> */}
             </div>
 
             {/* Micro Highlights */}
