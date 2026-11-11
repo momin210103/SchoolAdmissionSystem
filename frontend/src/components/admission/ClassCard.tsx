@@ -6,18 +6,21 @@ export interface ClassCardProps {
   admissionClass: AdmissionClassUnit;
   onApply?: (classId: string) => void;
   isApplying?: boolean;
+  isDisabled?: boolean;
 }
 
 export const ClassCard = ({
   admissionClass,
   onApply,
   isApplying = false,
+  isDisabled = false,
 }: ClassCardProps) => {
   const { id, name, shift, totalSeats, heldSeats, confirmedSeats, availableSeats, isActive } =
     admissionClass;
 
   const isFull = availableSeats <= 0;
-  const isAvailable = isActive && !isFull;
+  const isClassActive = isActive ?? true;
+  const isAvailable = isClassActive && !isFull && !isDisabled;
 
   const getShiftIcon = (shiftName?: string) => {
     if (!shiftName) return null;
@@ -49,7 +52,7 @@ export const ClassCard = ({
           </div>
 
           <div className="flex flex-col items-end gap-1 shrink-0">
-            {!isActive ? (
+            {!isClassActive ? (
               <span className="badge badge-expired">Admissions Closed</span>
             ) : isFull ? (
               <span className="badge badge-cancelled">Capacity Reached</span>
@@ -84,8 +87,11 @@ export const ClassCard = ({
           aria-disabled={!isAvailable || isApplying}
         >
           {isApplying ? (
-            <span>Securing Seat...</span>
-          ) : !isActive ? (
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Securing Seat...</span>
+            </span>
+          ) : !isClassActive ? (
             <span>Admissions Closed</span>
           ) : isFull ? (
             <span className="flex items-center gap-1.5">

@@ -10,6 +10,7 @@ export interface ClassListProps {
   error?: string | null;
   onApply?: (classId: string) => void;
   onRefresh?: () => void;
+  submittingClassId?: string | null;
   emptyTitle?: string;
   emptyDescription?: string;
   className?: string;
@@ -21,6 +22,7 @@ export const ClassList = ({
   error = null,
   onApply,
   onRefresh,
+  submittingClassId = null,
   emptyTitle,
   emptyDescription,
   className = "",
@@ -67,7 +69,13 @@ export const ClassList = ({
       className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}
     >
       {classes.map((item) => (
-        <ClassCard key={item.id} admissionClass={item} onApply={onApply} />
+        <ClassCard
+          key={item.id}
+          admissionClass={item}
+          onApply={onApply}
+          isApplying={submittingClassId === item.id}
+          isDisabled={Boolean(submittingClassId && submittingClassId !== item.id)}
+        />
       ))}
     </div>
   );
