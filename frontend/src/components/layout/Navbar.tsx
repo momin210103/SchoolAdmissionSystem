@@ -5,8 +5,9 @@ import { useStudentId } from "../../hooks/useStudentId";
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { studentId } = useStudentId();
+  // const { studentId } = useStudentId();
   const location = useLocation();
+  const { studentId, clearStudentId } = useStudentId();
 
   // Close mobile menu on route change
   const [prevPathname, setPrevPathname] = useState(location.pathname);
@@ -82,6 +83,13 @@ export const Navbar = () => {
               <PlusCircle className="w-4 h-4 mr-1.5 shrink-0" />
               <span>Create Class</span>
             </NavLink>
+            <button
+              type="button"
+              onClick={clearStudentId}
+              className="text-secondary-600 hover:text-secondary-800 hover:underline font-medium ml-1 transition-colors"
+            >
+              clear student id
+            </button>
           </nav>
 
           {/* Right Header Section: Student ID Indicator & Actions */}

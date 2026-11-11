@@ -16,7 +16,7 @@ export function App() {
         <Routes>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<AdmissionLandingPage />} />
-            {/* <Route path="admission" element={<AvailableClassesSection />} /> */}
+            <Route path="admission" element={<AdmissionLandingPage />} />
             <Route path="applications" element={<MyApplicationsPage />} />
             <Route
               path="applications/:holdId"
