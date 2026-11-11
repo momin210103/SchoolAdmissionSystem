@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: schooladmission_postgres
+    restart: unless-stopped
+    dns_search: .
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-SchoolAdmissionDb}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Postgres@123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-SchoolAdmissionDb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - schooladmission_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/SchoolAdmission.API/Dockerfile
+      network: host
+    container_name: schooladmission_backend
+    restart: unless-stopped
+    dns_search: .
+    ports:
+      - "8080:8080"
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-SchoolAdmissionDb};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-Postgres@123};"
+      HOLD_DURATION_SECONDS: ${HOLD_DURATION_SECONDS:-600}
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - schooladmission_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: schooladmission_frontend
+    restart: unless-stopped
+    dns_search: .
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - schooladmission_network
+
+volumes:
+  postgres_data:
+    name: schooladmission_postgres_data
+
+networks:
+  schooladmission_network:
+    name: schooladmission_network
